@@ -1,4 +1,4 @@
-# 脑电识别与轮椅交互 FPGA 源码
+# 基于 FPGA 的智能脑控轮椅系统
 
 本工程集成 SSVEP、注意力、情绪推理、HDMI 交互与轮椅控制接口，目标器件为 GW5AT-LV60PG484AC1/I0（GW5AT-60B），顶层为 fusion_top。
 
