@@ -1,0 +1,147 @@
+`include "ssvep_hardware_layout.vh"
+// Fixed EEG signal-processing hardware. No program ROM, PC, ISA or register file.
+module ssvep_hardware_core(
+ input wire clk,rst_n,sample_valid,output wire sample_ready,
+ input wire signed [31:0] sample0,sample1,sample2,sample3,input wire [3:0] sample_bad,
+ input wire sample_reset,sample_active,sample_method,input wire [15:0] sample_epoch,sample_sequence,
+ output logic check_valid,output logic signed [63:0] score0,score1,score2,score3,score4,
+ output logic [3:0] channel_mask,output logic [15:0] check_epoch,check_sequence,
+ output logic numeric_fault,output wire [15:0] debug_phase,output logic [31:0] cycle_counter);
+ logic [2:0] owner;
+ logic [8:0] write_pointer,accepted_count,hop_count,window_start,ring_index,index;
+ logic [1:0] channel,row,col,inner;
+ logic [3:0] matrix_index;
+ logic [2:0] band,target,good_count;
+ logic [6:0] covariance_lag;
+ logic frame_active,frame_method,history_skip;
+ logic [15:0] frame_epoch,frame_sequence;
+ logic [3:0] initialized,frame_good,good_mask;
+ logic [8:0] bad_count[0:3],history_bad[0:3];
+ logic [255:0] pre_samples,clean_samples;
+ wire signed [63:0] raw_input[0:3];
+ assign raw_input[0]=$signed({{32{sample0[31]}},sample0})<<<20;
+ assign raw_input[1]=$signed({{32{sample1[31]}},sample1})<<<20;
+ assign raw_input[2]=$signed({{32{sample2[31]}},sample2})<<<20;
+ assign raw_input[3]=$signed({{32{sample3[31]}},sample3})<<<20;
+ wire [3:0] input_good;
+ genvar g;
+ generate for(g=0;g<4;g=g+1)begin:ingress_quality
+  assign input_good[g]=!sample_bad[g]&&raw_input[g]<64'sd40265318400000&&raw_input[g]>-64'sd40265318400000;
+ end endgenerate
+ logic signed [63:0] analysis_mean[0:3],bank_mean[0:3],scores[0:4];
+ logic signed [63:0] inverse[0:3];
+ logic signed [63:0] sample_value,sum_value,range_min,range_max,mean_value,peak_range;
+ logic signed [63:0] square_mean,variance,covariance,covariance_sum,lag_weight,weighted_covariance;
+ logic signed [63:0] trace_value,scale_value,root_scale,regularizer,cutoff,eigen_max;
+ logic signed [63:0] term,term_scaled,whiten_sum,candidate_max,band_weight,weighted_score;
+ wire local_covariance=frame_method&&band==0;
+ wire [13:0] channel_ring=14'(channel*375),channel_window=14'(channel*312),channel_band=14'(channel*250);
+ wire [13:0] row_band=14'(row*250),col_band=14'(col*250);
+ wire [13:0] template_base=({11'd0,target}<<9)-({11'd0,target}<<3)-({11'd0,target}<<2)+14'(col*125);
+ logic [13:0] ram_a,ram_b;logic ram_we;logic signed [63:0] ram_wd;
+ wire signed [63:0] ram_qa,ram_qb;
+ logic [13:0] memory_a,memory_b;logic memory_we;logic signed [63:0] memory_wd;
+ wire [13:0] filter_a,filter_b,vector_a,vector_b;
+ wire filter_we;wire signed [63:0] filter_wd;
+ ssvep_data_ram #(.COMPACT_BAD(1)) storage(clk,memory_we,memory_a,memory_a,memory_b,memory_wd,ram_qa,ram_qb);
+ always_comb begin
+  memory_a=ram_a;memory_b=ram_b;memory_we=ram_we;memory_wd=ram_wd;
+  if(owner==1)begin memory_a=filter_a;memory_b=filter_b;memory_we=filter_we;memory_wd=filter_wd;end
+  if(owner==2)begin memory_a=vector_a;memory_b=vector_b;memory_we=0;memory_wd=0;end
+ end
+ logic filter_start,filter_window;
+ wire filter_done,filter_fault;wire [255:0] filter_result;
+ wire filter_product;wire signed [63:0] filter_pa,filter_pb;
+ logic vector_start,vector_periodic;
+ logic [13:0] vector_source_a,vector_source_b;
+ logic [15:0] vector_length,vector_denominator;
+ logic [6:0] vector_lag;
+ wire vector_done,vector_fault;wire signed [63:0] vector_value;
+ wire vector_product;wire signed [63:0] vector_pa,vector_pb;
+ wire [11:0] reference_a,reference_b;wire signed [63:0] reference_qa,reference_qb;
+ wire vector_divide;wire signed [127:0] vector_numerator;wire signed [63:0] vector_divisor;
+ logic matrix_start,matrix_transpose;logic [1:0] matrix_pass;
+ wire matrix_done,matrix_fault,matrix_product;wire signed [63:0] matrix_pa,matrix_pb;
+ wire [3:0] left_bank=matrix_pass==0?4'd2:matrix_pass==1?4'd4:4'd5;
+ wire [3:0] right_bank=matrix_pass==0?4'd1:matrix_pass==1?4'd3:4'd5;
+ wire [3:0] destination_bank=matrix_pass==0?4'd4:matrix_pass==1?4'd5:4'd6;
+ logic eigen_start,eigen_keep_vectors;
+ wire eigen_done,eigen_fault;
+ wire eigen_math_request;wire [1:0] eigen_math_kind;wire signed [63:0] eigen_math_a,eigen_math_b;
+ logic [7:0] tensor_a,tensor_b;logic tensor_wea,tensor_web;logic signed [63:0] tensor_da,tensor_db;
+ wire signed [63:0] tensor_qa,tensor_qb;
+ wire [7:0] matrix_ta,matrix_tb,eigen_ta,eigen_tb;
+ wire matrix_twea,matrix_tweb,eigen_twea,eigen_tweb;
+ wire signed [63:0] matrix_tda,matrix_tdb,eigen_tda,eigen_tdb;
+ logic [7:0] tensor_mux_a,tensor_mux_b;logic tensor_mux_wea,tensor_mux_web;
+ logic signed [63:0] tensor_mux_da,tensor_mux_db;
+ always_comb begin
+  tensor_mux_a=tensor_a;tensor_mux_b=tensor_b;tensor_mux_wea=tensor_wea;tensor_mux_web=tensor_web;
+  tensor_mux_da=tensor_da;tensor_mux_db=tensor_db;
+  if(owner==3)begin
+   tensor_mux_a=matrix_ta;tensor_mux_b=matrix_tb;tensor_mux_wea=matrix_twea;tensor_mux_web=matrix_tweb;
+   tensor_mux_da=matrix_tda;tensor_mux_db=matrix_tdb;
+  end
+  if(owner==4)begin
+   tensor_mux_a=eigen_ta;tensor_mux_b=eigen_tb;tensor_mux_wea=eigen_twea;tensor_mux_web=eigen_tweb;
+   tensor_mux_da=eigen_tda;tensor_mux_db=eigen_tdb;
+  end
+ end
+ ssvep_tensor_ram tensor_storage(clk,tensor_mux_wea&&rst_n,tensor_mux_web&&rst_n,tensor_mux_a,tensor_mux_b,
+  tensor_mux_da,tensor_mux_db,tensor_qa,tensor_qb);
+ logic math_request;logic [1:0] math_kind;logic signed [63:0] math_a,math_b;
+ wire math_response,math_error;wire signed [63:0] math_value;
+ wire arithmetic_response,arithmetic_error;wire signed [63:0] arithmetic_value;
+ logic product_valid;logic signed [63:0] product_a,product_b;
+ wire product_done,product_overflow;wire signed [127:0] product;wire signed [63:0] rounded_product;
+ logic divide_start;logic [2:0] divide_op;logic signed [63:0] divide_a,divide_b;
+ logic signed [127:0] divide_wide;
+ wire divide_busy,divide_done,divide_error;wire signed [63:0] divide_value;wire signed [127:0] unused_product;
+ ssvep_product_pipe multiplier(clk,rst_n,product_valid,product_a,product_b,product_done,product,rounded_product,product_overflow);
+ qmath #(.ENABLE_MULTIPLY(0),.FAST_DIVIDE(1),.RADIX4_DIVIDE(1)) divider_root(clk,rst_n,divide_start,divide_op,divide_a,divide_b,divide_wide,
+  divide_busy,divide_done,divide_error,divide_value,unused_product);
+ assign arithmetic_response=product_done||divide_done;
+ assign arithmetic_value=product_done?rounded_product:divide_value;
+ assign arithmetic_error=product_done?product_overflow:divide_error;
+ assign math_response=owner==0&&arithmetic_response;
+ assign math_value=arithmetic_value;assign math_error=arithmetic_error;
+ always_comb begin
+  product_valid=0;product_a=0;product_b=0;
+  divide_start=0;divide_op=1;divide_a=0;divide_b=0;divide_wide=0;
+  case(owner)
+   0:begin
+    product_valid=math_request&&math_kind==0;product_a=math_a;product_b=math_b;
+    divide_start=math_request&&math_kind!=0;divide_op=math_kind==2?3'd2:3'd1;divide_a=math_a;divide_b=math_b;
+   end
+   1:begin product_valid=filter_product;product_a=filter_pa;product_b=filter_pb;end
+   2:begin
+    product_valid=vector_product;product_a=vector_pa;product_b=vector_pb;
+    divide_start=vector_divide;divide_op=4;divide_wide=vector_numerator;divide_b=vector_divisor;
+   end
+   3:begin product_valid=matrix_product;product_a=matrix_pa;product_b=matrix_pb;end
+   4:begin
+    product_valid=eigen_math_request&&eigen_math_kind==0;product_a=eigen_math_a;product_b=eigen_math_b;
+    divide_start=eigen_math_request&&eigen_math_kind!=0;divide_op=eigen_math_kind==2?3'd2:3'd1;
+    divide_a=eigen_math_a;divide_b=eigen_math_b;
+   end
+   default:;
+  endcase
+ end
+ ssvep_batch_sos filter(clk,rst_n,filter_start,filter_window,history_skip,band,
+  ~initialized|~frame_good,pre_samples,filter_done,filter_fault,filter_result,
+  filter_a,filter_b,filter_we,filter_wd,ram_qa,ram_qb,filter_product,filter_pa,filter_pb,
+  product_done&&owner==1,product_overflow,rounded_product);
+ ssvep_reference_rom reference_table(clk,reference_a,reference_b,reference_qa,reference_qb);
+ ssvep_vector_mac covariance_pipeline(clk,rst_n,vector_start,vector_periodic,vector_source_a,vector_source_b,
+  vector_length,vector_denominator,vector_lag,vector_done,vector_fault,vector_value,
+  vector_a,vector_b,ram_qa,ram_qb,reference_a,reference_b,reference_qa,reference_qb,
+  vector_product,vector_pa,vector_pb,product_done&&owner==2,product,
+  vector_divide,vector_numerator,vector_divisor,divide_done&&owner==2,divide_error,divide_value);
+ ssvep_matrix_mac matrix_pipeline(clk,rst_n,matrix_start,matrix_transpose,left_bank,right_bank,destination_bank,
+  matrix_done,matrix_fault,matrix_ta,matrix_tb,matrix_twea,matrix_tweb,matrix_tda,matrix_tdb,tensor_qa,tensor_qb,
+  matrix_product,matrix_pa,matrix_pb,product_done&&owner==3,product);
+ ssvep_jacobi tensor_solver(clk,rst_n,eigen_start,eigen_keep_vectors,eigen_done,eigen_fault,
+  eigen_ta,eigen_tb,eigen_twea,eigen_tweb,eigen_tda,eigen_tdb,tensor_qa,tensor_qb,
+  eigen_math_request,eigen_math_kind,eigen_math_a,eigen_math_b,arithmetic_response&&owner==4,arithmetic_error,arithmetic_value);
+ logic signed [63:0] add_a,add_b;logic add_sub;
+ wire signed [64:0] add_result=add_sub?({add_a[63],add_a}-{add_b[63],add_b}):({add_a[63],add_a}+{add_b[63],add_b});

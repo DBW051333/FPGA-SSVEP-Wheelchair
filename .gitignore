@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+/impl/gwsynthesis/
+/impl/pnr/

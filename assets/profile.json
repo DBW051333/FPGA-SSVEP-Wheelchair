@@ -1,0 +1,281 @@
+{
+  "frequencies": [
+    7,
+    9,
+    11,
+    15,
+    17
+  ],
+  "seconds": 2,
+  "samples": 250,
+  "history": 62,
+  "frac": 28,
+  "data_words": 5942,
+  "data_depth": 6144,
+  "reference_period": 125,
+  "allocations": {
+    "WP": {
+      "address": 0,
+      "words": 1
+    },
+    "COUNT": {
+      "address": 1,
+      "words": 1
+    },
+    "HOP": {
+      "address": 2,
+      "words": 1
+    },
+    "ACTIVE": {
+      "address": 3,
+      "words": 1
+    },
+    "EPOCH": {
+      "address": 4,
+      "words": 1
+    },
+    "METHOD": {
+      "address": 5,
+      "words": 1
+    },
+    "RAWBAD": {
+      "address": 6,
+      "words": 1
+    },
+    "RESETFLAG": {
+      "address": 7,
+      "words": 1
+    },
+    "SEQ": {
+      "address": 8,
+      "words": 1
+    },
+    "INPUT": {
+      "address": 9,
+      "words": 4
+    },
+    "INIT": {
+      "address": 13,
+      "words": 4
+    },
+    "PSTATE": {
+      "address": 17,
+      "words": 72
+    },
+    "MEANS": {
+      "address": 89,
+      "words": 4
+    },
+    "GOOD": {
+      "address": 93,
+      "words": 4
+    },
+    "HISTBAD": {
+      "address": 97,
+      "words": 4
+    },
+    "HISTORY_SKIP": {
+      "address": 101,
+      "words": 1
+    },
+    "MASK": {
+      "address": 102,
+      "words": 1
+    },
+    "GOODCOUNT": {
+      "address": 103,
+      "words": 1
+    },
+    "BAND": {
+      "address": 104,
+      "words": 1
+    },
+    "TARGET": {
+      "address": 105,
+      "words": 1
+    },
+    "LOCAL": {
+      "address": 106,
+      "words": 1
+    },
+    "SX": {
+      "address": 107,
+      "words": 1
+    },
+    "SQRTX": {
+      "address": 108,
+      "words": 1
+    },
+    "BM": {
+      "address": 109,
+      "words": 4
+    },
+    "SCORES": {
+      "address": 113,
+      "words": 5
+    },
+    "BANKSTATE": {
+      "address": 118,
+      "words": 8
+    },
+    "LPTR": {
+      "address": 126,
+      "words": 1
+    },
+    "OPTR": {
+      "address": 127,
+      "words": 1
+    },
+    "FIRST": {
+      "address": 128,
+      "words": 1
+    },
+    "REFERENCE_BASE": {
+      "address": 129,
+      "words": 1
+    },
+    "CXX": {
+      "address": 130,
+      "words": 16
+    },
+    "CXY": {
+      "address": 146,
+      "words": 16
+    },
+    "WX": {
+      "address": 162,
+      "words": 16
+    },
+    "WY": {
+      "address": 178,
+      "words": 16
+    },
+    "T": {
+      "address": 194,
+      "words": 16
+    },
+    "M": {
+      "address": 210,
+      "words": 16
+    },
+    "G": {
+      "address": 226,
+      "words": 16
+    },
+    "BT": {
+      "address": 242,
+      "words": 16
+    },
+    "J": {
+      "address": 258,
+      "words": 16
+    },
+    "V": {
+      "address": 274,
+      "words": 16
+    },
+    "INV": {
+      "address": 290,
+      "words": 4
+    },
+    "ROT": {
+      "address": 294,
+      "words": 5
+    },
+    "CLEAN": {
+      "address": 299,
+      "words": 1500
+    },
+    "BAD": {
+      "address": 1799,
+      "words": 1500
+    },
+    "X": {
+      "address": 3299,
+      "words": 1248
+    },
+    "XB": {
+      "address": 4547,
+      "words": 1000
+    },
+    "PRE": {
+      "address": 5547,
+      "words": 45
+    },
+    "PREZI": {
+      "address": 5592,
+      "words": 18
+    },
+    "BANKCOEF": {
+      "address": 5610,
+      "words": 100
+    },
+    "BANKZI": {
+      "address": 5710,
+      "words": 40
+    },
+    "WEIGHTS": {
+      "address": 5750,
+      "words": 10
+    },
+    "TRI": {
+      "address": 5760,
+      "words": 11
+    },
+    "YWHITEN": {
+      "address": 5771,
+      "words": 160
+    },
+    "const_0": {
+      "address": 5931,
+      "words": 1
+    },
+    "const_1": {
+      "address": 5932,
+      "words": 1
+    },
+    "const_2": {
+      "address": 5933,
+      "words": 1
+    },
+    "const_3": {
+      "address": 5934,
+      "words": 1
+    },
+    "const_4": {
+      "address": 5935,
+      "words": 1
+    },
+    "const_5": {
+      "address": 5936,
+      "words": 1
+    },
+    "const_6": {
+      "address": 5937,
+      "words": 1
+    },
+    "const_7": {
+      "address": 5938,
+      "words": 1
+    },
+    "const_8": {
+      "address": 5939,
+      "words": 1
+    },
+    "const_9": {
+      "address": 5940,
+      "words": 1
+    },
+    "const_10": {
+      "address": 5941,
+      "words": 1
+    }
+  },
+  "physical_storage": {
+    "numeric_words": 4644,
+    "numeric_capacity_words": 5120,
+    "boolean_words": 1500,
+    "boolean_bits_per_word": 1
+  },
+  "architecture": "dedicated hardware task graph; no instruction execution"
+}

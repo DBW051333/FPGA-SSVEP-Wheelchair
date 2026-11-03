@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gowin-fpga-project>
+<Project><Template>FPGA</Template><Version>5</Version>
+<Device name="GW5AT-60B" pn="GW5AT-LV60PG484AC1/I0">gw5at60b-002</Device><FileList>
+<File path="src/dashboard_compact_font.sv" type="file.verilog" enable="1"/>
+<File path="src/cyton_daisy_rx.sv" type="file.verilog" enable="1"/>
+<File path="src/dac_pair_driver.v" type="file.verilog" enable="1"/>
+<File path="src/fusion_top.v" type="file.verilog" enable="1"/>
+<File path="src/key_filter.v" type="file.verilog" enable="1"/>
+<File path="src/motion_link.sv" type="file.verilog" enable="1"/>
+<File path="src/panel_reader.v" type="file.verilog" enable="1"/>
+<File path="src/pll_init.v" type="file.verilog" enable="1"/>
+<File path="src/plla_clock.v" type="file.verilog" enable="1"/>
+<File path="src/qmath.sv" type="file.verilog" enable="1"/>
+<File path="src/reference_pll.v" type="file.verilog" enable="1"/>
+<File path="src/ssvep_hardware_core.sv" type="file.verilog" enable="1"/>
+<File path="src/ssvep_batch_sos.sv" type="file.verilog" enable="1"/>
+<File path="src/ssvep_vector_mac.sv" type="file.verilog" enable="1"/>
+<File path="src/ssvep_tensor_ram.sv" type="file.verilog" enable="1"/>
+<File path="src/ssvep_matrix_mac.sv" type="file.verilog" enable="1"/>
+<File path="src/ssvep_jacobi.sv" type="file.verilog" enable="1"/>
+<File path="src/ssvep_live_frontend.sv" type="file.verilog" enable="1"/>
+<File path="src/ssvep_live_kernel.sv" type="file.verilog" enable="1"/>
+<File path="src/ssvep_memory.sv" type="file.verilog" enable="1"/>
+<File path="src/ssvep_stimulus.v" type="file.verilog" enable="1"/>
+<File path="src/tmds_tx.v" type="file.verilog" enable="1"/>
+<File path="src/uart.sv" type="file.verilog" enable="1"/>
+<File path="src/video_pll.v" type="file.verilog" enable="1"/>
+<File path="src/video_timing.v" type="file.verilog" enable="1"/>
+<File path="constraints/fusion.cst" type="file.cst" enable="1"/>
+<File path="constraints/fusion.sdc" type="file.sdc" enable="1"/>
+<File path="src/panel_status.sv" type="file.verilog" enable="1"/>
+<File path="src/status_cdc.sv" type="file.verilog" enable="1"/>
+<File path="src/page_command_router.sv" type="file.verilog" enable="1"/>
+<File path="src/panel_key_link.sv" type="file.verilog" enable="1"/>
+<File path="src/paged_dashboard.sv" type="file.verilog" enable="1"/>
+<File path="src/attention_cyton_rx.sv" type="file.verilog" enable="1"/>
+<File path="src/attention_core.sv" type="file.verilog" enable="1"/>
+<File path="src/emotion_core.sv" type="file.verilog" enable="1"/>
+<File path="src/emotion_divider.sv" type="file.verilog" enable="1"/>
+<File path="src/emotion_rx8.sv" type="file.verilog" enable="1"/>
+<File path="src/eeg_metrics.sv" type="file.verilog" enable="1"/>
+</FileList></Project>
